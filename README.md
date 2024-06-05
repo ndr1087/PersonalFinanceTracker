@@ -1,1 +1,3 @@
-The PersonalFinanceTracker project is designed to offer users an intuitive and efficient way to manage their finances directly from their browsers. This JavaScript-powered frontend handles all user interactions, enabling the entry of transaction and budget details, managing user information, and ensuring secure user authentication. It seamlessly integrates with the backend to fetch and display financial data, making personal finance management accessible and straightforward. Whether you're tracking daily expenses or planning long-term budgets, the PersonalFinanceTracker is your comprehensive solution to staying on top of your financial health.
+## TravelPlannerApp
+
+This project is a travel planning application that allows users to create and manage their travel itineraries, view destinations, and plan trips using Go for the backend and HTML/CSS/JavaScript for the frontend.
