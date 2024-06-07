@@ -1,103 +1,66 @@
 import axios from 'axios';
 
+const apiBase =  process.env.API_ENDPOINT;  
+
+function axiosRequest(endpoint, method, data, authRequired = false) {
+    const url = `${apiBase}${endpoint}`;
+    const headers = {};
+    
+    if (authRequired) {
+        const authToken = sessionStorage.getItem('authToken');
+        if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+        }
+    }
+    
+    return axios({ method, url, data, headers: headers });
+}
+
 function submitUserInfo(username, password) {
-    const apiEndpoint = process.env.API_ENDPOINT + '/users';
-    axios.post(apiEndpoint, {
-        username: username,
-        password: password
-    }).then(response => {
-        console.log('User info submitted successfully', response.data);
-    }).catch(error => {
-        console.error('Error submitting user info', error);
-    });
+    axiosRequest('/users', 'post', { username, password })
+        .then(response => console.log('User info submitted successfully', response.data))
+        .catch(error => console.error('Error submitting user info', error));
 }
 
 function authenticateUser(username, password) {
-    const apiEndpoint = process.env.API_ENDPOINT + '/auth';
-    axios.post(apiEndpoint, {
-        username: username,
-        password: password
-    }).then(response => {
-        sessionStorage.setItem('authToken', response.data.token);
-        console.log('User authenticated successfully');
-    }).catch(error => {
-        console.error('Error authenticating user', error);
-    });
+    axiosRequest('/auth', 'post', { username, password })
+        .then(response => {
+            sessionStorage.setItem('authToken', response.data.token);
+            console.log('User authenticated successfully');
+        })
+        .catch(error => console.error('Error authenticating user', error));
 }
 
 function submitTransactionDetail(amount, type, date) {
-    const apiEndpoint = process.env.API_ENDPOINT + '/transactions';
-    const authToken = sessionStorage.getItem('authToken');
-    axios.post(apiEndpoint, {
-        amount: amount,
-        type: type,
-        date: date
-    }, {
-        headers: {
-            'Authorization': `Bearer ${authToken}`
-        }
-    }).then(response => {
-        console.log('Transaction detail submitted successfully', response.data);
-    }).catch(error => {
-        console.error('Error submitting transaction detail', error);
-    });
+    axiosRequest('/transactions', 'post', { amount, type, date }, true)
+        .then(response => console.log('Transaction detail submitted successfully', response.data))
+        .catch(error => console.error('Error submitting transaction detail', error));
 }
 
 function submitBudgetDetail(amount, category) {
-    const apiEndpoint = process.env.API_ENDPOINT + '/budgets';
-    const authToken = sessionStorage.getItem('authToken');
-    axios.post(apiEndpoint, {
-        amount: amount,
-        category: category
-    }, {
-        headers: {
-            'Authorization': `Bearer ${authToken}`
-        }
-    }).then(response => {
-        console.log('Budget detail submitted successfully', response.data);
-    }).catch(error => {
-        console.error('Error submitting budget detail', error);
-    });
+    axiosRequest('/budgets', 'post', { amount, category }, true)
+        .then(response => console.log('Budget detail submitted successfully', response.data))
+        .catch(error => console.error('Error submitting budget detail', error));
 }
 
 function fetchTransactions() {
-    const apiEndpoint = process.env.API_ENDPOINT + '/transactions';
-    const authToken = sessionStorage.getItem('authToken');
-    axios.get(apiEndpoint, {
-        headers: {
-            'Authorization': `Bearer ${authToken}`
-        }
-    }).then(response => {
-        displayTransactions(response.data.transactions);
-    }).catch(error => {
-        console.error('Error fetching transactions', error);
-    });
-}
-
-function displayTransactions(transactions) {
-    transactions.forEach(transaction => {
-        console.log('Transaction:', transaction);
-    });
+    axiosRequest('/transactions', 'get', null, true)
+        .then(response => displayTransactions(response.data.transactions))
+        .catch(error => console.error('Error fetching transactions', error));
 }
 
 function fetchBudgets() {
-    const apiEndpoint = process.env.API_ENDPOINT + '/budgets';
-    const authToken = sessionStorage.getItem('authToken');
-    axios.get(apiEndpoint, {
-        headers: {
-            'Authorization': `Bearer ${authToken}`
-        }
-    }).then(response => {
-        displayBudgets(response.data.budgets);
-    }).catch(error => {
-        console.error('Error fetching budgets', error);
-    });
+    axiosRequest('/budgets', 'get', null, true)
+        .then(response => displayBudgets(response.data.budgets))
+        .catch(error => console.error('Error fetching budgets', error));
+}
+
+function displayTransactions(transactions) {
+    transactions.forEach(transaction => console.log('Transaction:', transaction));
 }
 
 function displayBudgets(budgets) {
-    budgets.forEach(budget => {
-        console.log('Budget:', budget);
-    });
+    budgets.forEach(budget => console.log('Budget:', budget));
 }
 
 export { submitUserInfo, authenticateUser, submitTransactionDetail, submitBudgetDetail, fetchTransactions, fetchBudgets };
