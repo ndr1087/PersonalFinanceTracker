@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const apiBase =  process.env.API_ENDPOINT;  
+const apiBase = process.env.API_ENDPOINT;  
 
 function axiosRequest(endpoint, method, data, authRequired = false) {
     const url = `${apiBase}${endpoint}`;
@@ -10,10 +10,27 @@ function axiosRequest(endpoint, method, data, authRequired = false) {
         const authToken = sessionStorage.getItem('authToken');
         if (authToken) {
             headers['Authorization'] = `Bearer ${authToken}`;
+        } else {
+            console.error('Error: Authentication token not found.');
+            return Promise.reject(new Error('Authentication token not found'));
         }
     }
     
-    return axios({ method, url, data, headers: headers });
+    return axios({ method, url, data, headers: headers }).catch(handleAxiosError);
+}
+
+function handleAxiosError(error) {
+    if (error.response) {
+        console.error('Error Data:', error.response.data);
+        console.error('Error Status:', error.response.status);
+        console.error('Error Headers:', error.response.headers);
+    } else if (error.request) {
+        console.error('Error Request:', error.request);
+    } else {
+        console.error('Error Message:', error.message);
+    }
+    console.error('Error Config:', error.config);
+    return Promise.reject(error);
 }
 
 function submitUserInfo(username, password) {
@@ -23,7 +40,7 @@ function submitUserInfo(username, password) {
 }
 
 function authenticateUser(username, password) {
-    axiosRequest('/auth', 'post', { username, password })
+    axiosRequest('/auth', 'post', { username, password }, false)
         .then(response => {
             sessionStorage.setItem('authToken', response.data.token);
             console.log('User authenticated successfully');
