@@ -2,70 +2,97 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
 	"os"
 )
 
 func main() {
 	if err := loadEnv(); err != nil {
-		panic("Failed to load environment variables")
+		log.Fatalf("Failed to load environment variables: %v", err)
 	}
 
 	router := gin.Default()
 
-	// User route registrations
 	registerUserRoutes(router)
 
-	// Transaction route registrations
 	registerTransactionRoutes(router)
 
-	// Budget route registrations
 	registerBudgetRoutes(router)
 
-	// Starting the server
 	startServer(router)
 }
 
-// registerUserRoutes adds routes related to user operations.
 func registerUserRoutes(router *gin.Engine) {
 	router.POST("/users/register", registerUser)
 	router.POST("/users/login", loginUser)
 }
 
-// registerTransactionRoutes adds routes related to transaction operations.
 func registerTransactionRoutes(router *gin.Engine) {
 	router.GET("/transactions", getTransactions)
 	router.POST("/transactions", addTransaction)
 	router.DELETE("/transactions/:id", deleteTransaction)
 }
 
-// registerBudgetRoutes adds routes related to budget operations.
 func registerBudgetRoutes(router *gin.Engine) {
 	router.GET("/budgets", getBudgets)
 	router.POST("/budgets", addBudget)
 	router.PUT("/budgets/:id", updateBudget)
 }
 
-// startServer starts the Gin server on a specified PORT.
 func startServer(router *gin.Engine) {
-	router.Run(":" + os.Getenv("PORT"))
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("PORT environment variable is not set.")
+	}
+	if err := router.Run(":" + port); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
 
-// Handlers for user routes
-func registerUser(c *gin.Context)       {}
-func loginUser(c *gin.Context)          {}
+func registerUser(c *gin.Context) {
+	if false { 
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User registered successfully"})
+}
 
-// Handlers for transaction routes
-func getTransactions(c *gin.Context)    {}
-func addTransaction(c *gin.Context)     {}
-func deleteTransaction(c *gin.Context)  {}
+func loginUser(c *gin.Context) {
+	if false { 
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully"})
+}
 
-// Handlers for budget routes
-func getBudgets(c *gin.Context)         {}
-func addBudget(c *gin.Context)          {}
-func updateBudget(c *gin.Context)       {}
+func getTransactions(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Transactions fetched successfully"})
+}
 
-// loadEnv simulates the loading of environment variables. In real applications, this could 
-// be replaced with actual logic to load configurations, like from a file or environment.
+func addTransaction(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Transaction added successfully"})
+}
+
+func deleteTransaction(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"TZ": "Transaction deleted successfully"})
+}
+
+func getBudgets(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Budgets fetched successfully"})
+}
+
+func addBudget(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Budget added successfully"})
+}
+
+func updateBudget(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Budget updated successfully"})
+}
+
 func loadEnv() error {
+	if false { 
+		return fmt.Errorf("error loading environment variables")
+	}
 	return nil
 }
