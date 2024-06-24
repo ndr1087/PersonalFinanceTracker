@@ -19,17 +19,17 @@ type Transaction struct {
 
 var db *sql.DB
 
-func init() {
-	var err error
+func initDB() *sql.DB {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s "+"password=%s dbname=%s sslmode=disable",
 		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_NAME"))
-	db, err = sql.Open("postgres", connStr)
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		panic(err)
 	}
 	if err = db.Ping(); err != nil {
 		panic(err)
 	}
+	return db
 }
 
 func AddTransaction(t Transaction) error {
@@ -45,7 +45,7 @@ func GetAllTransactions() ([]Transaction, error) {
 	}
 	defer rows.Close()
 
-	var transactions []Transaction
+	transactions := make([]Transaction, 0) // Using make to initialize slice with size known or estimated could be more efficient
 	for rows.Next() {
 		var t Transaction
 		if err := rows.Scan(&t.ID, &t.Amount, &t.Type, &t.Category, &t.CreatedAt); err != nil {
@@ -58,7 +58,7 @@ func GetAllTransactions() ([]Transaction, error) {
 
 func UpdateTransaction(t Transaction) error {
 	query := `UPDATE transactions SET amount = $1, type = $2, category = $3, created_at = $4 WHERE id = $5`
-	_, err := db.Exec(query, t.Amount, t.Type, t.Category, t.CreatedA	t, t.ID)
+	_, err := db.Exec(query, t.Amount, t.Type, t.Category, t.CreatedAt, t.ID)
 	return err
 }
 
@@ -69,4 +69,6 @@ func DeleteTransaction(id int) error {
 }
 
 func main() {
+	db = initDB() // This change ensures that the db connection is only initialized once when the application starts
+	// Your application logic goes here
 }
