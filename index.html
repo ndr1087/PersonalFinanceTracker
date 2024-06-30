@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="main-container">
+        <section id="user-auth">
+            <div id="registration">
+                <form id="registration-form">
+                    <label for="reg-username">Username:</label>
+                    <input type="text" id="reg-username" name="username" required>
+                    <label for="reg-password">Password:</label>
+                    <input type="password" id="reg-password" name="password" required>
+                    <label for="reg-email">Email:</label>
+                    <input type="email" id="reg-email" name="email" required>
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+            <div id="login">
+                <form id="login-form">
+                    <label for="login-username">Username:</label>
+                    <input type="text" id="login-username" name="username" required>
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" name="password" required>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </section>
+        <section id="transactions">
+            <form id="transaction-form">
+                <label for="trans-type">Transaction Type:</label>
+                <select id="trans-type" name="type">
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
+                <label for="trans-amount">Amount:</label>
+                <input type="number" id="trans-amount" name="amount" min="0" step="0.01" required>
+                <label for="trans-description">Description:</label>
+                <input type="text" id="trans-description" name="description">
+                <label for="trans-date">Date:</label>
+                <input type="date" id="trans-date" name="date" required>
+                <button type="submit">Add Transaction</button>
+            </form>
+        </section>
+        <section id="budgets">
+            <!-- Future implementation for budget viewing functionalities -->
+        </section>
+    </div>
+</body>
+</html>
