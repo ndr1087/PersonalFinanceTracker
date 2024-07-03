@@ -9,6 +9,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Added shadow for depth */
 }
 
 .header {
@@ -16,6 +17,7 @@ body {
   color: #ffffff;
   padding: 20px 0;
   text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Consistency in design with shadow */
 }
 
 .transaction-list {
@@ -31,6 +33,12 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: transform 0.2s; /* Smooth transition effect */
+}
+
+.transaction-item:hover {
+  transform: translateY(-5px); /* Slight lift effect on hover */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .transaction-item:nth-child(even) {
@@ -39,6 +47,7 @@ body {
 
 .budget {
   margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .budget-title {
@@ -55,7 +64,8 @@ body {
 .progress-bar {
   background-color: #28a745;
   height: 20px;
-  width: 50%;
+  width: 50%; /* Consider dynamically changing this width based on budget data */
+  transition: width 0.4s ease; /* Smooth transition for width change */
 }
 
 .input-section {
@@ -63,6 +73,7 @@ body {
   border: 1px solid #ccc;
   padding: 20px;
   margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .input-label {
@@ -76,6 +87,12 @@ body {
   margin-bottom: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  transition: border-color 0.2s; /* Smooth transition for focus */
+}
+
+.input-field:focus {
+  border-color: #007bff;
+  outline: none; /* Highlight focus on input */
 }
 
 .button {
@@ -85,6 +102,7 @@ body {
   border: none;
   cursor: pointer;
   border-radius: 5px;
+  transition: background-color 0.2s; /* Smooth background transition */
 }
 
 .button:hover {
@@ -96,7 +114,11 @@ body {
     flex-direction: column;
   }
   
+  .container, .input-section {
+    padding: 10px; /* Reduced padding for smaller devices */
+  }
+
   .input-field, .button {
-    width: auto;
+    width: 100%; /* Full width for better mobile experience */
   }
 }
