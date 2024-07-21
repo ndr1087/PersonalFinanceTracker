@@ -9,7 +9,7 @@ import (
     _ "github.com/lib/pq"
 )
 
-var db *sql.DB
+var databaseConnection *sql.DB
 
 type Budget struct {
     ID     int
@@ -17,73 +17,73 @@ type Budget struct {
     Amount float64
 }
 
-func initDB() {
+func initializeDatabase() {
     var err error
-    dbInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+    databaseConnectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
         os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 
-    db, err = sql.Open("postgres", dbInfo)
+    databaseConnection, err = sql.Open("postgres", databaseConnectionString)
     if err != nil {
         panic(err)
     }
 
-    if err = db.Ping(); err != nil {
+    if err = databaseConnection.Ping(); err != nil {
         panic(err)
     }
 }
 
-func createBudget(budget *Budget) error {
-    query := `INSERT INTO budgets (name, amount) VALUES ($1, $2) RETURNING id`
-    err := db.QueryRow(query, budget.Name, budget.Amount).Scan(&budget.ID)
+func insertBudget(budget *Budget) error {
+    insertQuery := `INSERT INTO budgets (name, amount) VALUES ($1, $2) RETURNING id`
+    err := databaseConnection.QueryRow(insertQuery, budget.Name, budget.Amount).Scan(&budget.ID)
     if err != nil {
         return err
     }
     return nil
 }
 
-func getBudgetByID(id int) (*Budget, error) {
+func fetchBudgetByID(id int) (*Budget, error) {
     budget := &Budget{}
-    query := `SELECT id, name, amount FROM budgets WHERE id = $1`
-    err := db.QueryRow(query, id).Scan(&budget.ID, &budget.Name, &budget.Amount)
+    selectQuery := `SELECT id, name, amount FROM budgets WHERE id = $1`
+    err := databaseConnection.QueryRow(selectQuery, id).Scan(&budget.ID, &budget.Name, &budget.Amount)
     if err != nil {
         return nil, err
     }
     return budget, nil
 }
 
-func updateBudget(budget *Budget) error {
-    query := `UPDATE budgets SET name = $1, amount = $2 WHERE id = $3`
-    _, err := db.Exec(query, budget.Name, budget.Amount, budget.ID)
+func modifyBudget(budget *Budget) error {
+    updateQuery := `UPDATE budgets SET name = $1, amount = $2 WHERE id = $3`
+    _, err := databaseConnection.Exec(updateQuery, budget.Name, budget.Amount, budget.ID)
     if err != nil {
         return err
     }
     return nil
 }
 
-func deleteBudget(id int) error {
-    query := `DELETE FROM budgets WHERE id = $1`
-    _, err := db.Exec(query, id)
+func removeBudget(id int) error {
+    deleteQuery := `DELETE FROM budgets WHERE id = $1`
+    _, err := databaseConnection.Exec(deleteQuery, id)
     if err != nil {
         return err
     }
     return nil
 }
 
-func listAllBudgets() ([]Budget, error) {
+func retrieveAllBudgets() ([]Budget, error) {
     var budgets []Budget
-    query := `SELECT id, name, amount FROM budgets`
-    rows, err := db.Query(query)
+    fetchAllQuery := `SELECT id, name, amount FROM budgets`
+    rows, err := databaseConnection.Query(fetchAllQuery)
     if err != nil {
         return nil, err
     }
     defer rows.Close()
 
     for rows.Next() {
-        var b Budget
-        if err := rows.Scan(&b.ID, &b.Name, &b.Amount); err != nil {
+        var budget Budget
+        if err := rows.Scan(&budget.ID, &budget.Name, &budget.Amount); err != nil {
             return nil, err
         }
-        budgets = append(budgets, b)
+        budgets = append(budgets, budget)
     }
 
     if err = rows.Err(); err != nil {
@@ -94,9 +94,9 @@ func listAllBudgets() ([]Budget, error) {
 }
 
 func main() {
-    initDB()
+    initializeDatabase()
 
-    budgets, err := listAllBudgets()
+    budgets, err := retrieveAllBudgets()
     if err != nil {
         log.Fatal(err)
     }
