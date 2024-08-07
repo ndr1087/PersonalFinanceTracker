@@ -19,9 +19,7 @@ type User struct {
 }
 
 var (
-    // Declare a mutex to make the cache safe for concurrent use
     cacheMutex sync.Mutex
-    // Create a simple in-memory cache
     userCache = make(map[string]*User)
 )
 
@@ -47,14 +45,12 @@ func (u *User) CreateUser() error {
         return err
     }
 
-    // Invalidate cache after creating a new user
     removeFromCache(u.Email)
 
     return nil
 }
 
 func GetUserByEmail(email string) (*User, error) {
-    // Attempt to retrieve user from cache
     cachedUser, isCached := getFromCache(email)
     if isCached {
         return cachedUser, nil
@@ -74,7 +70,6 @@ func GetUserByEmail(email string) (*User, error) {
         return nil, err
     }
 
-    // Add user to cache
     addToCache(email, &user)
 
     return &user, nil
@@ -93,20 +88,43 @@ func (u *User) UpdateUser() error {
         return err
     }
 
-    // Update cache after modifying the user
     addToCache(u.Email, u)
 
     return nil
 }
 
-// addToCache adds a user to the in-memory cache.
+func ListAllUsers() ([]User, error) {
+    db, err := DbConnection()
+    if err != nil {
+        return nil, err
+    }
+    defer db.Close()
+
+    query := `SELECT id, username, password, email, registration_date FROM users`
+    rows, err := db.Query(query)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var users []User
+    for rows.Next() {
+        var user User
+        if err := rows.Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.RegistrationDate); err != nil {
+            return nil, err
+        }
+        users = append(users, user)
+    }
+
+    return users, nil
+}
+
 func addToCache(email string, user *User) {
     cacheMutex.Lock()
     defer cacheMutex.Unlock()
     userCache[email] = user
 }
 
-// getFromCache tries to get a user from the in-memory cache.
 func getFromCache(email string) (*User, bool) {
     cacheMutex.Lock()
     defer cacheMutex.Unlock()
@@ -114,7 +132,6 @@ func getFromCache(email string) (*User, bool) {
     return user, exists
 }
 
-// removeFromCache removes a user from the cache.
 func removeFromCache(email string) {
     cacheMutex.Lock()
     defer cacheMutex.Unlock()
