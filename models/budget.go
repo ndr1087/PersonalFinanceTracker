@@ -2,6 +2,7 @@ package main
 
 import (
     "database/sql"
+    "fmt"
     "os"
     "time"
 
@@ -18,22 +19,22 @@ type Budget struct {
 }
 
 var (
-    db     *sql.DB
-    cache  map[int]*Budget // Adding a cache for Budgets
+    db    *sql.DB
+    cache map[int]*Budget // Cache for Budgets
 )
 
 func Initialize() {
     var err error
     db, err = sql.Open("postgres", os.Getenv("DATABASE_URL"))
     if err != nil {
-        panic(err)
+        panic(fmt.Sprintf("Failed to connect to database: %v", err))
     }
 
     if err = db.Ping(); err != nil {
-        panic(err)
+        panic(fmt.Sprintf("Failed to ping database: %v", err))
     }
 
-    cache = make(map[int]*Budget) // Initialize the cache map
+    cache = make(map[int]*Budget) // Initialize the cache
 }
 
 func CreateBudget(budget Budget) (int, error) {
@@ -43,50 +44,51 @@ func CreateBudget(budget Budget) (int, error) {
     if err != nil {
         return 0, err
     }
+
+    budget.ID = budgetID
+    cache[budgetID] = &budget // Cache the new budget
+
     return budgetID, nil
 }
 
 func GetBudget(id int) (*Budget, error) {
-    // Check if the result is in the cache first
-    if val, found := cache[id]; found {
-        return val, nil // Return the cached result if found
+    if budget, found := cache[id]; found {
+        // Return from cache if found
+        return budget, nil
     }
 
-    budget := &Budget{}
     query := `SELECT id, amount, category, start_date, end_date, user_id FROM budgets WHERE id = $1`
-    row := db.QueryRow(query, id)
-    err := row.Scan(&budget.ID, &budget.Amount, &budget.Category, &budget.StartDate, &budget.EndDate, &budget.UserID)
+    budget := &Budget{}
+    err := db.QueryRow(query, id).Scan(&budget.ID, &budget.Amount, &budget.Category, &budget.StartDate, &budget.EndDate, &budget.UserID)
     if err != nil {
         if err == sql.ErrNoRows {
-            return nil, nil
+            return nil, nil // No result
         }
         return nil, err
     }
 
-    cache[id] = budget // Store the result in the cache before returning
+    cache[id] = budget // Cache fetched budget
     return budget, nil
 }
 
 func UpdateBudget(id int, budget Budget) error {
     query := `UPDATE budgets SET amount = $1, category = $2, start_date = $3, end_date = $4, user_id = $5 WHERE id = $6`
     _, err := db.Exec(query, budget.Amount, budget.Category, budget.StartDate, budget.EndDate, budget.UserID, id)
-
     if err == nil {
-        delete(cache, id) // Invalidate cache on update
+        cache[id] = &budget // Update the cache with the new budget data
     }
     return err
 }
 
 func DeleteBudget(id int) error {
-    query := `DELETE FROM budgets WHERE id = $1`
-    _, err := db.Exec(query, id)
-    
+    _, err := db.Exec(`DELETE FROM budgets WHERE id = $1`, id)
     if err == nil {
-        delete(cache, id) // Invalidate cache on delete
+        delete(cache, id) // Remove from cache
     }
     return err
 }
 
 func main() {
     Initialize()
+    // Further logic can be added here
 }
